@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PrazoRápido</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fafafa;
+            margin: 0;
+            padding: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+        .container {
+            width: 500px;
+            height: 750px;
+            background-color: #fff;
+            border-radius: 30px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        h1 {
+            color: #4a90e2;
+            font-size: 1.5em;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        fieldset {
+            border: none;
+            padding: 10px;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+        legend {
+            font-size: 1.1em;
+            color: #4a90e2;
+            margin-bottom: 10px;
+        }
+        label, input, button {
+            display: block;
+            width: calc(100% - 16px);
+            margin: 5px 0;
+        }
+        input, button {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4a90e2;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+        }
+        button:hover {
+            background-color: #357abd;
+        }
+        input[readonly] {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PrazoRápido</h1>
+        <!-- adicionar dias uteis -->
+        <fieldset>
+            <legend>Adicionar Dias Úteis</legend>
+            <label for="calendar">Calendário</label>
+            <input type="text" id="calendar" value="br-BC" />
+            <label for="initialDate">Data Inicial</label>
+            <input type="date" id="initialDate" />
+            <label for="term">Dias Úteis</label>
+            <input type="number" id="term" value="21" />
+            <button id="calculate">Calcular</button>
+            <label for="finalDate">Data Final</label>
+            <input type="date" id="finalDate" readonly />
+        </fieldset>
+        <!-- calcular o prazo -->
+        <fieldset>
+            <legend>Calcular Prazo</legend>
+            <label for="calendarDelta">Calendário</label>
+            <input type="text" id="calendarDelta" value="br-BC" />
+            <label for="initialDateDelta">Data Inicial</label>
+            <input type="date" id="initialDateDelta" />
+            <label for="finalDateDelta">Data Final</label>
+            <input type="date" id="finalDateDelta" />
+            <button id="calculateDelta">Calcular</button>
+            <label for="termDelta">Dias Úteis</label>
+            <input type="number" id="termDelta" readonly />
+            <label for="termDeltaActual">Dias Corridos</label>
+            <input type="number" id="termDeltaActual" readonly />
+        </fieldset>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script>
+        $(function () {
+            const getIsoDate = dt => dt.toISOString().split('T')[0];
+            $("#initialDate, #initialDateDelta").val(getIsoDate(new Date()));
+            $("#calculate").click(function () {
+                $.getJSON(`https://elekto.com.br/api/Calendars/${$("#calendar").val()}/Add?initialDate=${$("#initialDate").val()}&days=${$("#term").val()}&type=work&finalAdjust=none`, 
+                r => $("#finalDate").val(getIsoDate(new Date(r))))
+                .fail((jqXhr, textStatus) => alert(`Erro: ${textStatus}`));
+            });
+            $("#calculateDelta").click(function () {
+                $.getJSON(`https://elekto.com.br/api/Calendars/${$("#calendarDelta").val()}/Delta?initialDate=${$("#initialDateDelta").val()}&finalDate=${$("#finalDateDelta").val()}&type=financial`,
+                r => {
+                    $("#termDelta").val(r.WorkDays);
+                    $("#termDeltaActual").val(r.ActualDays);
+                })
+                .fail((jqXhr, textStatus) => alert(`Erro: ${textStatus}`));
+            });
+        });
+    </script>
+</body>
+</html>
